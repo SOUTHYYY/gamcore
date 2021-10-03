@@ -1,0 +1,35 @@
+{
+  "productName": "Gamcore",
+  "appId": "org.gamcore.browser",
+  "files": ["node_modules/", "main.js", "package.json", "preload.js"],
+  "extraResources": ["./resources/**", "./PepperFlashPlayer.plugin/**"],
+  "mac": {
+    "target": ["dmg"],
+    "type": "distribution",
+    "hardenedRuntime": false,
+    "entitlements": "resources/entitlements.mac.plist",
+    "entitlementsInherit": "resources/entitlements.mac.plist",
+    "gatekeeperAssess": false
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  },
+  "win": {
+    "target": ["nsis"]
+  },
+  "directories": {
+    "output": "release",
+    "buildResources": "resources"
+  }
+}
