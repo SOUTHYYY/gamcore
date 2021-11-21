@@ -1,13 +1,13 @@
 {
-  "name": "gamecore",
-  "version": "1.0.0",
+  "name": "gamcore",
+  "version": "1.1.0",
   "description": "Application for support Flash Player games",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package": "electron-builder build --publish never"
+    "package": "cross-env NODE_ENV=production electron-builder build --win --mac --publish never"
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/SOUTHYYY/gamcore",
   "keywords": [
     "Electron",
     "quick",
