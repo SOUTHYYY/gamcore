@@ -1,7 +1,9 @@
 const { app, BrowserWindow, Menu, shell } = require("electron");
+const log = require('electron-log');
 const path = require("path");
+const Sentry = require("@sentry/electron");
 
-// Specify flash path, supposing it is placed in the same directory with main.js.
+Sentry.init({ dsn: "https://aeaa2257bb6f48ef9884c0b63ad11882@browser.gamcore.com/3" });
 let pluginName;
 switch (process.platform) {
   case "win32":
@@ -15,17 +17,22 @@ switch (process.platform) {
     break;
 }
 
-console.log("DIRNAME", __dirname);
-console.log(process.env.NODE_ENV);
-// process.env.NODE_ENV === "production" ? `../${pluginName}` : pluginName;
+log.log(`Platform: ${process.platform}. Get plugin ${pluginName}`)
+log.log(`Dirname: ${__dirname}`)
+log.log(`Enviroment: ${process.env.NODE_ENV}`)
 
-app.commandLine.appendSwitch(
-  "ppapi-flash-path",
-  path.join(__dirname, `../${pluginName}`)
-);
-app.setName("gamcore-browser");
-// Optional: Specify flash version, for example, v17.0.0.169
-app.commandLine.appendSwitch("ppapi-flash-version", "11.2.999");
+log.log(`Trying to apply plugin`)
+try {
+  app.commandLine.appendSwitch(
+    "ppapi-flash-path",
+    path.join(__dirname, `../${pluginName}`)
+  );
+  app.setName("gamcore-browser");
+  app.commandLine.appendSwitch("ppapi-flash-version", "11.2.999");
+  log.log(`Success apply plugin`)
+} catch (err) {
+  Sentry.captureException(`Error apply plugin ${err}`);
+}
 
 app.on("ready", () => {
   let win = new BrowserWindow({
@@ -39,6 +46,21 @@ app.on("ready", () => {
   const openDefaultBrowser = async (link) => {
     await shell.openExternal(link);
   };
+
+  const openFolderPath = async () => {
+    const { USER } = process.env
+    let path;
+    switch (process.platform) {
+      case "win32":
+        path = `C:\\Users\\${USER}\\AppData\\Roaming\\Gamcore\\logs\\main.log`
+        break;
+      case "darwin":
+        path = `/Users/${USER}/Library/Logs/Gamcore/main.log`;
+        break;
+    }
+    log.log(`User Path: ${path}`)
+    shell.showItemInFolder(path)
+  }
 
   const MENU_TEMPLATE = [
     {
@@ -80,9 +102,8 @@ app.on("ready", () => {
       submenu: [
         {
           label: "Full Screen",
-          accelerator: `${
-            process.platform === "darwin" ? "Cmd+Ctrl+f" : "Ctrl+f11"
-          }`,
+          accelerator: `${process.platform === "darwin" ? "Cmd+Ctrl+f" : "Ctrl+f11"
+            }`,
           click: () => toggleFullscreen(),
         },
       ],
@@ -100,6 +121,16 @@ app.on("ready", () => {
           click: () =>
             openDefaultBrowser("https://porcore.com/?utm_source=browser"),
         },
+      ],
+    },
+    {
+      label: "Debug",
+      submenu: [
+        {
+          label: "Open Debug Folder",
+          click: async () => await openFolderPath()
+
+        }
       ],
     },
   ];
